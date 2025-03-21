@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h2 { text-align: center; }
+        .course-list { margin-top: 20px; }
+        .course-item { padding: 10px; border-bottom: 1px solid #ddd; }
+        #calendar { max-width: 900px; margin: auto; }
+    </style>
+</head>
+<body>
+    <h1>Welcome, <%= student.username %></h1>
+    <a href="/student/browse">Browse Courses</a> | 
+    <a href="/student/registered">Registered Courses</a> | 
+    <a href="/auth/logout">Logout</a>
+
+    <h2>Registered Courses</h2>
+    <div class="course-list">
+        <% registeredCourses.forEach(course => { %>
+            <div class="course-item">
+                <strong><%= course.name %></strong> - <%= course.days.join(", ") %> | <%= course.startTime %> - <%= course.endTime %>
+            </div>
+        <% }) %>
+    </div>
+
+    <h2>Your Weekly Schedule</h2>
+    <div id="calendar"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const events = JSON.parse('<%- JSON.stringify(calendarEvents) %>');
+    
+            const calendarEl = document.getElementById("calendar");
+            const calendar = new Calendar(calendarEl, {
+                initialView: "timeGridWeek",
+                events: events,
+            });
+    
+            calendar.render();
+        });
+    
+        class Calendar {
+            constructor(el, options) {
+                this.el = el;
+                this.options = options;
+                this.render();
+            }
+            render() {
+                this.el.innerHTML = "<p>Calendar will be displayed here (Custom JS implementation).</p>";
+            }
+        }
+    </script>
+    
+</body>
+</html>

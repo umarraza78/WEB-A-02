@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Courses - Course Registration System</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="dashboard-container">
+      
+        <div class="sidebar">
+            <h2>Course Registration System</h2>
+            <p class="welcome-text">Welcome, <%= student.name %></p>
+            <div class="nav-section">
+                <nav>
+                    <a href="/student/dashboard">Dashboard</a>
+                    <a href="/student/register-courses" class="active">Register Courses</a>
+                    <a href="/student/my-courses">My Courses</a>
+                    <a href="/auth/logout">Logout</a>
+                </nav>
+            </div>
+        </div>
+
+       
+        <div class="main-content">
+            <div class="content-header">
+                <h1 style="margin-left: 80px;">Available Courses</h1>
+                <p style="margin-left: 80px;">Select courses to register for the current semester</p>
+            </div>
+
+            <% if (error) { %>
+                <div class="error-message"><%= error %></div>
+            <% } %>
+            <% if (success) { %>
+                <div class="success-message"><%= success %></div>
+            <% } %>
+
+           
+            <div class="filters-section">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label for="department">Department</label>
+                        <select id="department" class="filter-select">
+                            <option value="">All Departments</option>
+                            <% [...new Set(courses.map(c => c.department))].sort().forEach(dept => { %>
+                                <option value="<%= dept %>"><%= dept %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="level">Course Level</label>
+                        <select id="level" class="filter-select">
+                            <option value="">All Levels</option>
+                            <% [...new Set(courses.map(c => c.level))].sort().forEach(level => { %>
+                                <option value="<%= level %>"><%= level %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="timeOfDay">Time of Day</label>
+                        <select id="timeOfDay" class="filter-select">
+                            <option value="">Any Time</option>
+                            <option value="morning">Morning (8:00 AM - 12:00 PM)</option>
+                            <option value="afternoon">Afternoon (12:00 PM - 4:00 PM)</option>
+                            <option value="evening">Evening (4:00 PM - 8:00 PM)</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Days of Week</label>
+                        <div class="days-filter">
+                            <label class="day-checkbox">
+                                <input type="checkbox" value="Monday" class="day-filter"> Mon
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" value="Tuesday" class="day-filter"> Tue
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" value="Wednesday" class="day-filter"> Wed
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" value="Thursday" class="day-filter"> Thu
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" value="Friday" class="day-filter"> Fri
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="seats-filter">
+                            <input type="checkbox" id="availableSeats" checked>
+                            Show only courses with available seats
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+          
+            <div class="courses-grid" id="coursesGrid">
+                <% courses.forEach(course => { %>
+                    <div class="course-card" 
+                         data-department="<%= course.department %>"
+                         data-level="<%= course.level %>"
+                         data-days="<%= course.days.join(',') %>"
+                         data-start-time="<%= course.startTime %>"
+                         data-seats="<%= course.seats %>">
+                        <div class="course-header">
+                            <h3><%= course.code %> - <%= course.name %></h3>
+                            <span class="seats-available">Seats: <%= course.seats %></span>
+                        </div>
+                        <div class="course-details">
+                            <p><strong>Department:</strong> <%= course.department %></p>
+                            <p><strong>Level:</strong> <%= course.level %></p>
+                            <p><strong>Instructor:</strong> <%= course.instructor %></p>
+                            <p><strong>Credits:</strong> <%= course.credits %></p>
+                            <p><strong>Schedule:</strong></p>
+                            <ul>
+                                <% course.days.forEach(day => { %>
+                                    <li><%= day %>: <%= course.startTime %> - <%= course.endTime %></li>
+                                <% }); %>
+                            </ul>
+                            <p><strong>Room:</strong> <%= course.room %></p>
+                            <% if (course.prerequisites && course.prerequisites.length > 0) { %>
+                                <p class="prerequisites">
+                                    <strong>Prerequisites:</strong> <%= course.prerequisites.join(', ') %>
+                                    <span class="prerequisite-note">* You must complete these courses before registering</span>
+                                </p>
+                            <% } %>
+                        </div>
+                        <div class="course-actions">
+                            <% if (course.seats > 0) { %>
+                                <button onclick="registerForCourse('<%= course._id %>')" 
+                                        class="register-btn"
+                                        <%= course.prerequisites && course.prerequisites.length > 0 ? 'data-prerequisites="' + course.prerequisites.join(',') + '"' : '' %>>
+                                    Register
+                                </button>
+                            <% } else { %>
+                                <button class="register-btn" disabled>No Seats Available</button>
+                            <% } %>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const coursesGrid = document.getElementById('coursesGrid');
+            const courseCards = coursesGrid.getElementsByClassName('course-card');
+            const filters = {
+                department: document.getElementById('department'),
+                level: document.getElementById('level'),
+                timeOfDay: document.getElementById('timeOfDay'),
+                days: Array.from(document.getElementsByClassName('day-filter')),
+                availableSeats: document.getElementById('availableSeats')
+            };
+
+            function getTimeSlot(time) {
+                const hour = parseInt(time.split(':')[0]);
+                if (hour >= 8 && hour < 12) return 'morning';
+                if (hour >= 12 && hour < 16) return 'afternoon';
+                if (hour >= 16 && hour < 20) return 'evening';
+                return '';
+            }
+
+            function filterCourses() {
+                const selectedDays = filters.days
+                    .filter(cb => cb.checked)
+                    .map(cb => cb.value);
+
+                Array.from(courseCards).forEach(card => {
+                    const department = card.dataset.department;
+                    const level = card.dataset.level;
+                    const days = card.dataset.days.split(',');
+                    const startTime = card.dataset.startTime;
+                    const seats = parseInt(card.dataset.seats);
+                    const timeSlot = getTimeSlot(startTime);
+
+                    const matchesDepartment = !filters.department.value || filters.department.value === department;
+                    const matchesLevel = !filters.level.value || filters.level.value === level;
+                    const matchesTime = !filters.timeOfDay.value || filters.timeOfDay.value === timeSlot;
+                    const matchesDays = selectedDays.length === 0 || days.some(day => selectedDays.includes(day));
+                    const matchesSeats = !filters.availableSeats.checked || seats > 0;
+
+                    card.style.display = (
+                        matchesDepartment &&
+                        matchesLevel &&
+                        matchesTime &&
+                        matchesDays &&
+                        matchesSeats
+                    ) ? '' : 'none';
+                });
+            }
+
+            // Add event listeners to all filters
+            filters.department.addEventListener('change', filterCourses);
+            filters.level.addEventListener('change', filterCourses);
+            filters.timeOfDay.addEventListener('change', filterCourses);
+            filters.days.forEach(day => day.addEventListener('change', filterCourses));
+            filters.availableSeats.addEventListener('change', filterCourses);
+        });
+
+        async function registerForCourse(courseId) {
+            try {
+                const button = event.target;
+                button.disabled = true;
+                button.textContent = 'Registering...';
+
+                const response = await fetch('/student/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ courseId })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showMessage(data.error || 'Failed to register for course', 'error');
+                    button.disabled = false;
+                    button.textContent = 'Register';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('An error occurred while registering for the course', 'error');
+                button.disabled = false;
+                button.textContent = 'Register';
+            }
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type === 'success' ? 'success-message' : 'error-message';
+            messageDiv.textContent = message;
+            document.querySelector('.content-header').appendChild(messageDiv);
+            setTimeout(() => messageDiv.remove(), 3000);
+        }
+    </script>
+
+    <style>
+    .prerequisites {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        border-left: 3px solid #ffc107;
+    }
+
+    .prerequisite-note {
+        display: block;
+        font-size: 0.8em;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+
+    .success-message,
+    .error-message {
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+        font-weight: 500;
+    }
+
+    .success-message {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .error-message {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .register-btn {
+        width: 100%;
+        padding: 10px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .register-btn:hover:not([disabled]) {
+        background-color: #218838;
+        transform: translateY(-1px);
+    }
+
+    .register-btn[disabled] {
+        background-color: #6c757d;
+        cursor: not-allowed;
+        opacity: 0.8;
+    }
+    </style>
+</body>
+</html> 

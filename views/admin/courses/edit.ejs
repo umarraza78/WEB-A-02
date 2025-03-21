@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Course - Course Registration System</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <h2>Course Registration System</h2>
+            <p class="welcome-text">Welcome, Admin</p>
+            <div class="nav-section">
+                <nav>
+                    <a href="/admin/dashboard">Dashboard</a>
+                    <a href="/admin/courses" class="active">Manage Courses</a>
+                    <a href="/admin/registrations">Registrations</a>
+                    <a href="/admin/reports">Reports</a>
+                    <a href="/auth/logout">Logout</a>
+                </nav>
+            </div>
+        </div>
+
+      
+        <div class="main-content">
+            <div class="content-header">
+                <h1 style="margin-left: 80px;">Edit Course</h1>
+                <p style="margin-left: 80px;">Update course information</p>
+            </div>
+
+            <% if (error) { %>
+                <div class="error-message"><%= error %></div>
+            <% } %>
+
+            <div class="course-form">
+                <form action="/admin/courses/<%= course._id %>?_method=PUT" method="POST" class="needs-validation" novalidate>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="code">Course Code*</label>
+                            <input type="text" class="form-control" id="code" name="code" value="<%= course.code %>" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="name">Course Name*</label>
+                            <input type="text" class="form-control" id="name" name="name" value="<%= course.name %>" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="department">Department*</label>
+                            <input type="text" class="form-control" id="department" name="department" value="<%= course.department %>" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="credits">Credits*</label>
+                            <input type="number" class="form-control" id="credits" name="credits" value="<%= course.credits %>" required min="1" max="4">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="level">Level*</label>
+                            <select class="form-control" id="level" name="level" required>
+                                <option value="BS" <%= course.level === 'BS' ? 'selected' : '' %>>BS</option>
+                                <option value="MS" <%= course.level === 'MS' ? 'selected' : '' %>>MS</option>
+                                <option value="PhD" <%= course.level === 'PhD' ? 'selected' : '' %>>PhD</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description">Description*</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required><%= course.description %></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="instructor">Instructor*</label>
+                            <input type="text" class="form-control" id="instructor" name="instructor" value="<%= course.instructor %>" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="room">Room Number*</label>
+                            <input type="text" class="form-control" id="room" name="room" value="<%= course.room %>" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="days">Days*</label>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="monday" name="days" value="Monday" 
+                                    <%= course.days.includes('Monday') ? 'checked' : '' %>>
+                                <label class="form-check-label" for="monday">Monday</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="tuesday" name="days" value="Tuesday"
+                                    <%= course.days.includes('Tuesday') ? 'checked' : '' %>>
+                                <label class="form-check-label" for="tuesday">Tuesday</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="wednesday" name="days" value="Wednesday"
+                                    <%= course.days.includes('Wednesday') ? 'checked' : '' %>>
+                                <label class="form-check-label" for="wednesday">Wednesday</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="thursday" name="days" value="Thursday"
+                                    <%= course.days.includes('Thursday') ? 'checked' : '' %>>
+                                <label class="form-check-label" for="thursday">Thursday</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="friday" name="days" value="Friday"
+                                    <%= course.days.includes('Friday') ? 'checked' : '' %>>
+                                <label class="form-check-label" for="friday">Friday</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="startTime">Start Time*</label>
+                            <input type="time" class="form-control" id="startTime" name="startTime" value="<%= course.startTime %>" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="endTime">End Time*</label>
+                            <input type="time" class="form-control" id="endTime" name="endTime" value="<%= course.endTime %>" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="seats">Available Seats*</label>
+                            <input type="number" class="form-control" id="seats" name="seats" value="<%= course.seats %>" required min="1">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="semester">Semester*</label>
+                            <select class="form-control" id="semester" name="semester" required>
+                                <option value="Fall" <%= course.semester === 'Fall' ? 'selected' : '' %>>Fall</option>
+                                <option value="Spring" <%= course.semester === 'Spring' ? 'selected' : '' %>>Spring</option>
+                                <option value="Summer" <%= course.semester === 'Summer' ? 'selected' : '' %>>Summer</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="prerequisites">Prerequisites</label>
+                        <select class="form-control" id="prerequisites" name="prerequisites" multiple>
+                            <% if (availableCourses && availableCourses.length > 0) { %>
+                                <% availableCourses.forEach(function(availableCourse) { %>
+                                    <option value="<%= availableCourse.code %>" 
+                                        <%= course.prerequisites && course.prerequisites.includes(availableCourse.code) ? 'selected' : '' %>>
+                                        <%= availableCourse.code %> - <%= availableCourse.name %>
+                                    </option>
+                                <% }); %>
+                            <% } else { %>
+                                <option disabled>No available courses for prerequisites</option>
+                            <% } %>
+                        </select>
+                        <small class="form-text text-muted">
+                            Hold Ctrl (Windows) or Command (Mac) to select multiple prerequisites. 
+                            Current prerequisites: 
+                            <%= course.prerequisites && course.prerequisites.length > 0 ? course.prerequisites.join(', ') : 'None' %>
+                        </small>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Update Course</button>
+                        <a href="/admin/courses" class="btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('.needs-validation');
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+        const startTime = document.getElementById('startTime');
+        const endTime = document.getElementById('endTime');
+        
+        function validateTimes() {
+            if (startTime.value && endTime.value) {
+                if (startTime.value >= endTime.value) {
+                    endTime.setCustomValidity('End time must be after start time');
+                } else {
+                    endTime.setCustomValidity('');
+                }
+            }
+        }
+
+        startTime.addEventListener('change', validateTimes);
+        endTime.addEventListener('change', validateTimes);
+        const daysCheckboxes = document.querySelectorAll('input[name="days"]');
+        daysCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const checked = document.querySelectorAll('input[name="days"]:checked');
+                if (checked.length === 0) {
+                    daysCheckboxes.forEach(cb => cb.setCustomValidity('Select at least one day'));
+                } else {
+                    daysCheckboxes.forEach(cb => cb.setCustomValidity(''));
+                }
+            });
+        });
+    });
+    </script>
+</body>
+</html> 

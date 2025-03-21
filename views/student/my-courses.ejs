@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Courses - Student Dashboard</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="dashboard-nav">
+            <div class="nav-header">
+                <h2>Student Dashboard</h2>
+                <p>My Courses</p>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/student/dashboard">Dashboard</a></li>
+                <li><a href="/student/register-courses">Register Courses</a></li>
+                <li><a href="/student/my-courses">My Courses</a></li>
+                <li><a href="/auth/logout">Logout</a></li>
+            </ul>
+        </nav>
+
+        <main class="dashboard-main">
+            <div class="page-header">
+                <h1>My Registered Courses</h1>
+                <p>Current semester courses</p>
+            </div>
+
+            <% if (error) { %>
+                <div class="error-message"><%= error %></div>
+            <% } %>
+
+            <% if (success) { %>
+                <div class="success-message"><%= success %></div>
+            <% } %>
+
+            <% if (courses && courses.length > 0) { %>
+                <div class="courses-grid">
+                    <% courses.forEach(course => { %>
+                        <div class="course-card">
+                            <div class="course-header">
+                                <h3><%= course.code %> - <%= course.name %></h3>
+                                <span class="course-level">Level <%= course.level %></span>
+                            </div>
+                            <div class="course-details">
+                                <p><strong>Department:</strong> <%= course.department %></p>
+                                <p><strong>Instructor:</strong> <%= course.instructor %></p>
+                                <p><strong>Credits:</strong> <%= course.credits %></p>
+                                <p><strong>Schedule:</strong> <%= course.days.join(', ') %> <%= course.startTime %>-<%= course.endTime %></p>
+                                <p><strong>Room:</strong> <%= course.room %></p>
+                                <% if (course.prerequisites && course.prerequisites.length > 0) { %>
+                                    <p><strong>Prerequisites:</strong> <%= course.prerequisites.join(', ') %></p>
+                                <% } %>
+                            </div>
+                            <div class="course-actions">
+                                <form action="/student/drop-course" method="POST" class="drop-form">
+                                    <input type="hidden" name="courseId" value="<%= course._id %>">
+                                    <button type="submit" class="btn-danger">Drop Course</button>
+                                </form>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <div class="no-data">
+                    <p>You haven't registered for any courses yet.</p>
+                    <a href="/student/register-courses" class="btn-primary">Register for Courses</a>
+                </div>
+            <% } %>
+        </main>
+    </div>
+</body>
+</html> 

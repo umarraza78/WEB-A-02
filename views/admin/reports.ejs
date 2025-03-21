@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Admin Dashboard</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .report-section {
+            margin: 20px auto;
+            padding: 30px;
+            max-width: 1000px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            overflow-x: auto; 
+        }
+    
+        .report-section h2 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            color: #333;
+        }
+    
+        .report-form {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+    
+        .report-form select {
+            padding: 10px;
+            font-size: 1rem;
+            min-width: 220px;
+        }
+    
+        .report-form button {
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+    
+        .report-form button:hover {
+            background-color: #1976D2;
+        }
+    
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            table-layout: fixed;
+        }
+    
+        .report-table th,
+        .report-table td {
+            padding: 14px 12px;
+            border: 1px solid #ccc;
+            text-align: left;
+            word-wrap: break-word;
+            white-space: nowrap;
+        }
+    
+        .report-table th {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+    
+        .report-table tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+    
+        .export-btn {
+            margin-top: 25px;
+            padding: 10px 18px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    
+        .export-btn:hover {
+            background-color: #45a049;
+        }
+    
+        @media screen and (max-width: 768px) {
+            .report-form {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+    
+            .report-table th, .report-table td {
+                font-size: 0.9rem;
+            }
+    
+            .report-table {
+                font-size: 14px;
+            }
+        }
+    </style>
+    
+    
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2>Course Registration System</h2>
+            <p class="welcome-text">Welcome, Admin</p>
+            <div class="nav-section">
+                <nav>
+                    <a href="/admin/dashboard">Dashboard</a>
+                    <a href="/admin/courses">Manage Courses</a>
+                    <a href="/admin/registrations">Registrations</a>
+                    <a href="/admin/reports" class="active">Reports</a>
+                    <a href="/auth/logout">Logout</a>
+                </nav>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="content-header">
+                <h1 style="margin-left: 50px;">Reports</h1>
+                <p style="margin-left: 50px;">Generate and view system reports</p>
+            </div>
+
+            <% if (error) { %>
+                <div class="error-message"><%= error %></div>
+            <% } %>
+            <% if (success) { %>
+                <div class="success-message"><%= success %></div>
+            <% } %>
+
+           
+            <div class="report-section">
+                <h2>Generate Report</h2>
+                <form class="report-form" action="/admin/reports/generate" method="POST">
+                    <div class="form-group">
+                        <label for="reportType">Report Type:</label>
+                        <select id="reportType" name="reportType" required onchange="toggleCourseSelect()">
+                            <option value="">Select Report Type</option>
+                            <option value="enrollment">Students Registered in Course</option>
+                            <option value="missing-prerequisites">Students Missing Prerequisites</option>
+                            <option value="seat-availability">Courses with Available Seats</option>
+                        </select>
+                    </div>
+
+                    <div id="courseSelectGroup" class="form-group">
+                        <label for="courseId">Select Course:</label>
+                        <select id="courseId" name="courseId">
+                            <option value="">Select Course</option>
+                            <% courses.forEach(course => { %>
+                                <option value="<%= course._id %>"><%= course.code %> - <%= course.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Generate Report</button>
+                </form>
+            </div>
+            <div class="report-display" style="margin-left: 100px;">
+                <% if (reportData) { %>
+                    <h2><%= reportTitle %></h2>
+                    
+                    <% if (reportType === 'missing-prerequisites') { %>
+                        <div class="report-table" style="margin-left: 100px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student Name</th>
+                                        <th>Roll Number</th>
+                                        <th>Department</th>
+                                        <th>Missing Prerequisites</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% reportData.forEach(student => { %>
+                                        <tr>
+                                            <td><%= student.name %></td>
+                                            <td><%= student.rollNumber %></td>
+                                            <td><%= student.department %></td>
+                                            <td>
+                                                <ul class="missing-prereqs">
+                                                    <% student.missingPrerequisites.forEach(prereq => { %>
+                                                        <li><%= prereq %></li>
+                                                    <% }); %>
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } else if (reportType === 'enrollment') { %>
+                        <div class="report-table" style="margin-left: 100px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student Name</th>
+                                        <th>Roll Number</th>
+                                        <th>Department</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% reportData.forEach(student => { %>
+                                        <tr>
+                                            <td><%= student.name %></td>
+                                            <td><%= student.rollNumber %></td>
+                                            <td><%= student.department %></td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } else if (reportType === 'seat-availability') { %>
+                        <div class="report-table" style="margin-left: 50px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Course Code</th>
+                                        <th>Course Name</th>
+                                        <th>Available Seats</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% reportData.forEach(course => { %>
+                                        <tr>
+                                            <td><%= course.code %></td>
+                                            <td><%= course.name %></td>
+                                            <td><%= course.seats %></td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } %>
+                <% } else { %>
+                    <p class="no-data">No report data available</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleCourseSelect() {
+            const reportType = document.getElementById('reportType').value;
+            const courseSelect = document.getElementById('courseSelectGroup');
+            const courseId = document.getElementById('courseId');
+            
+            courseSelect.style.display = (reportType === 'enrollment' || reportType === 'missing-prerequisites') ? 'block' : 'none';
+
+            courseId.required = (reportType === 'enrollment' || reportType === 'missing-prerequisites');
+ 
+            if (reportType === 'seat-availability') {
+                courseId.value = '';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleCourseSelect();
+        });
+
+        function exportToCSV() {
+            const reportType = '<%= reportType %>';
+            let csvContent = '';
+            let filename = 'report.csv';
+
+            const table = document.querySelector('.report-table');
+            const rows = table.querySelectorAll('tr');
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('th, td');
+                const rowData = Array.from(cells).map(cell => `"${cell.textContent}"`);
+                csvContent += rowData.join(',') + '\n';
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html> 

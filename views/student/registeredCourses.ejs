@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registered Courses</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h2 { text-align: center; }
+        .course-list { margin-top: 20px; }
+        .course-item { padding: 10px; border-bottom: 1px solid #ddd; }
+        .drop-btn { padding: 5px 10px; background-color: red; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Registered Courses</h1>
+    <a href="/student/dashboard">Dashboard</a> | 
+    <a href="/student/browse">Browse Courses</a> | 
+    <a href="/auth/logout">Logout</a>
+
+    <h2>Your Courses</h2>
+    <div class="course-list">
+        <% registeredCourses.forEach(course => { %>
+            <div class="course-item">
+                <strong><%= course.name %></strong> - <%= course.days.join(", ") %> | <%= course.startTime %> - <%= course.endTime %>
+                <button class="drop-btn" onclick="dropCourse('<%= course._id %>')">Drop</button>
+            </div>
+        <% }) %>
+    </div>
+
+    <script>
+        function dropCourse(courseId) {
+            fetch("/student/drop", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ courseId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) alert("Dropped successfully!");
+                else alert(data.error);
+                location.reload();
+            });
+        }
+    </script>
+</body>
+</html>

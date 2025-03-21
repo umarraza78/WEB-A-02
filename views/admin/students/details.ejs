@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Details - Admin Dashboard</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar">
+            <div class="nav-brand">Admin Dashboard</div>
+            <div class="nav-links">
+                <a href="/admin/dashboard" class="nav-link">Dashboard</a>
+                <a href="/admin/courses" class="nav-link">Courses</a>
+                <a href="/admin/students" class="nav-link">Students</a>
+                <a href="/auth/logout" class="nav-link">Logout</a>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1>Student Details</h1>
+                <a href="/admin/students" class="btn btn-secondary">Back to Students</a>
+            </div>
+
+            <div class="student-details-card">
+                <div class="student-info">
+                    <h2><%= student.name %></h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Student ID:</label>
+                            <span><%= student.studentId %></span>
+                        </div>
+                        <div class="info-item">
+                            <label>Email:</label>
+                            <span><%= student.email %></span>
+                        </div>
+                        <div class="info-item">
+                            <label>Department:</label>
+                            <span><%= student.department %></span>
+                        </div>
+                        <div class="info-item">
+                            <label>Major:</label>
+                            <span><%= student.major %></span>
+                        </div>
+                        <div class="info-item">
+                            <label>Year:</label>
+                            <span><%= student.year %></span>
+                        </div>
+                        <div class="info-item">
+                            <label>GPA:</label>
+                            <span><%= student.gpa %></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html> 

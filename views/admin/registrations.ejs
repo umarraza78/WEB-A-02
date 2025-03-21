@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registrations - Admin Dashboard</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <h2>Course Registration System</h2>
+            <p class="welcome-text">Welcome, Admin</p>
+            <div class="nav-section">
+                <nav>
+                    <a href="/admin/dashboard">Dashboard</a>
+                    <a href="/admin/courses">Manage Courses</a>
+                    <a href="/admin/registrations" class="active">Registrations</a>
+                    <a href="/admin/reports">Reports</a>
+                    <a href="/auth/logout">Logout</a>
+                </nav>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="content-header">
+                <h1 style="margin-left: 80px;">Student Registrations</h1>
+                <p style="margin-left: 80px;">Manage course registrations and overrides</p>
+            </div>
+
+            <% if (error) { %>
+                <div class="error-message"><%= error %></div>
+            <% } %>
+            <% if (success) { %>
+                <div class="success-message"><%= success %></div>
+            <% } %>
+
+            <div class="registration-section">
+                <h2 style="margin-left: 80px;">Course Enrollments</h2>
+                <div class="courses-grid">
+                    <% courses.forEach(course => { %>
+                        <div class="course-card">
+                            <div class="course-header">
+                                <h3><%= course.code %> - <%= course.name %></h3>
+                                <span class="seats-info">
+                                    Enrolled: <%= course.enrolledStudents.length %> | 
+                                    Available: <%= course.seats %>
+                                </span>
+                            </div>
+                            <div class="enrolled-students">
+                                <h4>Enrolled Students</h4>
+                                <ul>
+                                    <% course.enrolledStudents.forEach(student => { %>
+                                        <li>
+                                            <%= student.rollNumber %> - <%= student.name %>
+                                            <button 
+                                                onclick="handleRegistration('<%= student._id %>', '<%= course._id %>', 'remove')"
+                                                class="btn-danger btn-sm">
+                                                Remove
+                                            </button>
+                                            <button 
+                                                onclick="markCourseComplete('<%= student._id %>', '<%= course._id %>')"
+                                                class="btn-success btn-sm">
+                                                Mark as Complete
+                                            </button>
+                                        </li>
+                                    <% }); %>
+                                </ul>
+                            </div>
+                            <div class="add-student">
+                                <h4>Add Student</h4>
+                                <select id="student-<%= course._id %>" class="student-select">
+                                    <option value="">Select Student</option>
+                                    <% students.forEach(student => { %>
+                                        <% if (!course.enrolledStudents.find(s => s._id.equals(student._id))) { %>
+                                            <option value="<%= student._id %>">
+                                                <%= student.rollNumber %> - <%= student.name %>
+                                            </option>
+                                        <% } %>
+                                    <% }); %>
+                                </select>
+                                <button 
+                                    onclick="handleRegistration(document.getElementById('student-<%= course._id %>').value, '<%= course._id %>', 'add')"
+                                    class="btn-primary">
+                                    Add to Course
+                                </button>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function handleRegistration(studentId, courseId, action) {
+            if (!studentId && action === 'add') {
+                showMessage('Please select a student', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/admin/registrations/override', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        studentId,
+                        courseId,
+                        action
+                    })
+                });
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Server returned non-JSON response');
+                }
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to process registration');
+                }
+                showMessage(data.message, 'success');
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+
+            } catch (error) {
+                console.error('Registration error:', error);
+                showMessage(error.message || 'Error processing registration', 'error');
+            }
+        }
+
+        async function markCourseComplete(studentId, courseId) {
+            try {
+                const response = await fetch('/admin/registrations/complete-course', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        studentId,
+                        courseId
+                    })
+                });
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Server returned non-JSON response');
+                }
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to mark course as complete');
+                }
+                showMessage(data.message, 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+
+            } catch (error) {
+                console.error('Course completion error:', error);
+                showMessage(error.message || 'Error marking course as complete', 'error');
+            }
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            messageDiv.textContent = message;
+            
+            // Remove any existing messages
+            const existingMessages = document.querySelectorAll('.message');
+            existingMessages.forEach(msg => msg.remove());
+            
+            const mainContent = document.querySelector('.main-content');
+            mainContent.insertBefore(messageDiv, mainContent.firstChild);
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+    </script>
+
+    <style>
+        .message {
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .seat-count {
+            font-weight: bold;
+        }
+    </style>
+</body>
+</html> 
